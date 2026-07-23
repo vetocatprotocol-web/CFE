@@ -22,6 +22,27 @@ use App\Http\Controllers\Portal\DashboardController as PortalDashboard;
 use App\Http\Controllers\Portal\PortalController;
 use Illuminate\Support\Facades\Route;
 
+// Health check for Railway/Load Balancers
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        $dbStatus = 'connected';
+    } catch (\Exception $e) {
+        $dbStatus = 'disconnected';
+    }
+
+    $status = [
+        'status' => 'healthy',
+        'timestamp' => now()->toISOString(),
+        'php' => PHP_VERSION,
+        'laravel' => app()->version(),
+        'database' => $dbStatus,
+        'environment' => app()->environment(),
+    ];
+
+    return response()->json($status, 200);
+})->name('health');
+
 // Home redirect
 Route::get('/', fn() => redirect()->route('login'));
 

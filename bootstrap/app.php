@@ -24,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             AuditLog::class,
         ]);
+
+        // Trust proxies for Railway/load balancers
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -35,7 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json(['message' => 'Unauthorized.'], 403);
             }
 
-            return redirect()->route('home')->with('error', 'You do not have permission to access this page.');
+            return redirect()->route('login')->with('error', 'You do not have permission to access this page.');
         });
 
         $exceptions->renderable(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
@@ -52,5 +55,17 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return redirect()->back()->with('error', 'Too many requests. Please try again later.');
+        });
+
+        // Log all exceptions in production
+        $exceptions->reportable(function (\Throwable $e) {
+            if (app()->environment('production')) {
+                \Log::error('Application Exception', [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
         });
     })->create();

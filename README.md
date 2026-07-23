@@ -514,7 +514,45 @@ POST   /invoices/{id}/email                # Email invoice
 
 ## 🚀 Deployment
 
-### Traditional VPS (Recommended)
+### Railway (Recommended - Easiest)
+
+**Quick Deploy:**
+
+1. Push code to GitHub
+2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub repo
+3. Add PostgreSQL database
+4. Configure environment variables
+5. Deploy!
+
+**Environment Variables:**
+
+```env
+APP_NAME="Haland PetCare"
+APP_ENV=production
+APP_DEBUG=false
+DB_CONNECTION=pgsql
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+```
+
+**CLI Deploy:**
+
+```bash
+npm install -g @railway/cli
+railway login
+railway init
+railway add --plugin postgresql
+railway variables set APP_ENV=production
+railway up
+railway run php artisan migrate --force
+```
+
+📖 **Full Guide:** See [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md)
+
+---
+
+### Traditional VPS
 
 ```bash
 # Server requirements
@@ -538,33 +576,20 @@ php artisan view:cache
 sudo chown -R www-data:www-data storage bootstrap/cache
 ```
 
-### Docker Compose (Development)
+---
 
-```yaml
-version: '3.8'
-services:
-  app:
-    build: .
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-  db:
-    image: postgres:14
-    environment:
-      POSTGRES_DB: haland_petcare
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    volumes:
-      - db_data:/var/lib/postgresql/data
-volumes:
-  db_data:
-```
+### Docker Compose
 
 ```bash
+# Development
 docker-compose up -d
 docker-compose exec app php artisan migrate --seed
+
+# Production
+docker-compose -f docker-compose.yml up -d
 ```
+
+---
 
 ### Deployment Checklist
 
