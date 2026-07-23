@@ -25,8 +25,12 @@ return Application::configure(basePath: dirname(__DIR__))
             AuditLog::class,
         ]);
 
-        // Trust proxies for Railway/load balancers
-        $middleware->trustProxies(at: '*');
+        // Trust all proxies for Railway/load balancers
+        $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR |
+            Request::HEADER_X_FORWARDED_HOST |
+            Request::HEADER_X_FORWARDED_PORT |
+            Request::HEADER_X_FORWARDED_PROTO |
+            Request::HEADER_X_FORWARDED_AWS_ELB);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

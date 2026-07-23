@@ -1,13 +1,13 @@
-# Railway-compatible Docker Compose
-# For local development that mimics Railway environment
-
-version: '3.8'
+# ============================================
+# Docker Compose - Local Development
+# ============================================
 
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      target: production
     container_name: haland-petcare-app
     ports:
       - "8000:8000"
@@ -25,14 +25,11 @@ services:
       - SESSION_DRIVER=database
       - CACHE_STORE=database
     volumes:
-      - .:/app
       - ./storage:/app/storage
       - ./bootstrap/cache:/app/bootstrap/cache
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - haland-network
     restart: unless-stopped
 
   db:
@@ -46,8 +43,6 @@ services:
       POSTGRES_PASSWORD: secret
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - haland-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -59,6 +54,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: production
     container_name: haland-petcare-queue
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
     environment:
@@ -72,47 +68,13 @@ services:
       - DB_PASSWORD=secret
       - QUEUE_CONNECTION=database
     volumes:
-      - .:/app
       - ./storage:/app/storage
       - ./bootstrap/cache:/app/bootstrap/cache
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - haland-network
-    restart: unless-stopped
-
-  scheduler:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: haland-petcare-scheduler
-    command: php artisan schedule:work
-    environment:
-      - APP_ENV=local
-      - APP_DEBUG=true
-      - DB_CONNECTION=pgsql
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_DATABASE=haland_petcare
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=secret
-      - QUEUE_CONNECTION=database
-    volumes:
-      - .:/app
-      - ./storage:/app/storage
-      - ./bootstrap/cache:/app/bootstrap/cache
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - haland-network
     restart: unless-stopped
 
 volumes:
   postgres_data:
     driver: local
-
-networks:
-  haland-network:
-    driver: bridge

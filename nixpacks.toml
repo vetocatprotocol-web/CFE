@@ -1,18 +1,33 @@
+# ============================================
 # Railway Nixpacks Configuration
 # https://nixpacks.com/docs/providers/php
+# ============================================
 
+# PHP version and extensions
 [phases.setup]
-nixPkgs = ["php84", "php84Extensions.pdo_pgsql", "php84Extensions.pgsql", "php84Extensions.mbstring", "php84Extensions.xml", "php84Extensions.curl", "php84Extensions.zip", "php84Extensions.bcmath", "php84Extensions.gd", "php84Extensions.imagick", "nodejs_20"]
+nixPkgs = ["php84", "php84Extensions.pdo_pgsql", "php84Extensions.pgsql", "php84Extensions.mbstring", "php84Extensions.xml", "php84Extensions.curl", "php84Extensions.zip", "php84Extensions.bcmath", "php84Extensions.gd", "php84Extensions.opcache", "nodejs_20"]
 
+# Install dependencies
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader", "npm install", "npm run build"]
+cmds = [
+    "composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader",
+    "npm ci --no-audit --no-fund",
+    "npm run build"
+]
 
+# Build & optimize
 [phases.build]
-cmds = ["php artisan config:cache", "php artisan route:cache", "php artisan view:cache"]
+cmds = [
+    "mkdir -p storage/logs storage/framework/cache/data storage/framework/cache/streams storage/framework/sessions storage/framework/views bootstrap/cache",
+    "chmod -R 775 storage bootstrap/cache",
+    "composer dump-autoload --optimize --no-dev"
+]
 
+# Start command
 [start]
-cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
 
+# Environment variables
 [variables]
 PHP_VERSION = "8.4"
 NODE_VERSION = "20"
