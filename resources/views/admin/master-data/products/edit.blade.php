@@ -1,97 +1,137 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Produk - ' . $product->name)
-@section('header-title', 'Edit Produk')
+@section('header', 'Edit Produk')
 
 @section('content')
-<div class="max-w-2xl">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <form method="POST" action="{{ route('admin.products.update', $product) }}" class="space-y-5">
+<div class="max-w-4xl" x-data="{ loading: false }">
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-lg font-semibold text-gray-900">Edit Produk: {{ $product->name }}</h2>
+            <p class="mt-1 text-sm text-gray-500">Perbarui data produk yang sudah ada.</p>
+        </div>
+
+        <form method="POST" action="{{ route('admin.products.update', $product) }}" @submit="loading = true">
             @csrf
             @method('PUT')
 
-            <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Produk <span class="text-red-500">*</span></label>
-                <input type="text" name="name" id="name" value="{{ old('name', $product->name) }}" required
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('name') border-red-500 @enderror"
-                       placeholder="Contoh: Royal Canin Cat Food 3kg">
-                @error('name')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
+            <div class="card-body space-y-8">
 
-            <div>
-                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Kategori <span class="text-red-500">*</span></label>
-                <select name="category_id" id="category_id" required
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('category_id') border-red-500 @enderror">
-                    <option value="">Pilih Kategori</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat->id }}" {{ old('category_id', $product->category_id) == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
-                    @endforeach
-                </select>
-                @error('category_id')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                <textarea name="description" id="description" rows="3"
-                          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('description') border-red-500 @enderror"
-                          placeholder="Deskripsi produk...">{{ old('description', $product->description) }}</textarea>
-                @error('description')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Harga (Rp) <span class="text-red-500">*</span></label>
-                    <input type="number" name="price" id="price" value="{{ old('price', $product->price) }}" required min="0" step="500"
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('price') border-red-500 @enderror"
-                           placeholder="0">
-                    @error('price')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Informasi Dasar</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="name" class="form-label">Nama Produk <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" id="name" value="{{ old('name', $product->name) }}" required
+                                   class="form-input @error('name') error @enderror"
+                                   placeholder="Contoh: Royal Canin Cat Food 3kg">
+                            @error('name')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="category_id" class="form-label">Kategori <span class="text-red-500">*</span></label>
+                            <select name="category_id" id="category_id" required
+                                    class="form-select @error('category_id') error @enderror">
+                                <option value="">Pilih Kategori</option>
+                                @foreach($categories as $cat)
+                                    <option value="{{ $cat->id }}" {{ old('category_id', $product->category_id) == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
+
+                <hr class="border-gray-200">
+
                 <div>
-                    <label for="barcode" class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
-                    <input type="text" name="barcode" id="barcode" value="{{ old('barcode', $product->barcode) }}"
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('barcode') border-red-500 @enderror"
-                           placeholder="Opsional">
-                    @error('barcode')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Deskripsi</h3>
+                    <div class="form-group">
+                        <label for="description" class="form-label">Deskripsi Produk</label>
+                        <textarea name="description" id="description" rows="3"
+                                  class="form-textarea @error('description') error @enderror"
+                                  placeholder="Deskripsi produk...">{{ old('description', $product->description) }}</textarea>
+                        @error('description')
+                            <p class="form-error">{{ $message }}</p>
+                        @enderror
+                        <p class="form-hint">Deskripsi opsional untuk menjelaskan detail produk.</p>
+                    </div>
                 </div>
+
+                <hr class="border-gray-200">
+
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Harga & Barcode</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="price" class="form-label">Harga (Rp) <span class="text-red-500">*</span></label>
+                            <input type="number" name="price" id="price" value="{{ old('price', $product->price) }}" required min="0" step="500"
+                                   class="form-input @error('price') error @enderror"
+                                   placeholder="0">
+                            @error('price')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="form-hint">Harga jual produk dalam Rupiah.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="barcode" class="form-label">Barcode</label>
+                            <input type="text" name="barcode" id="barcode" value="{{ old('barcode', $product->barcode) }}"
+                                   class="form-input @error('barcode') error @enderror"
+                                   placeholder="Opsional">
+                            @error('barcode')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="form-hint">Barcode produk (opsional).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-gray-200">
+
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Stok</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="current_stock" class="form-label">Stok Saat Ini <span class="text-red-500">*</span></label>
+                            <input type="number" name="current_stock" id="current_stock" value="{{ old('current_stock', $product->current_stock) }}" required min="0"
+                                   class="form-input @error('current_stock') error @enderror"
+                                   placeholder="0">
+                            @error('current_stock')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="form-hint">Jumlah stok produk saat ini.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reorder_point" class="form-label">Titik Reorder <span class="text-red-500">*</span></label>
+                            <input type="number" name="reorder_point" id="reorder_point" value="{{ old('reorder_point', $product->reorder_point) }}" required min="0"
+                                   class="form-input @error('reorder_point') error @enderror"
+                                   placeholder="0">
+                            @error('reorder_point')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="form-hint">Batas minimum stok sebelum perlu restok.</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label for="current_stock" class="block text-sm font-medium text-gray-700 mb-1">Stok Saat Ini <span class="text-red-500">*</span></label>
-                    <input type="number" name="current_stock" id="current_stock" value="{{ old('current_stock', $product->current_stock) }}" required min="0"
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('current_stock') border-red-500 @enderror"
-                           placeholder="0">
-                    @error('current_stock')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
-                    <label for="reorder_point" class="block text-sm font-medium text-gray-700 mb-1">Titik Reorder <span class="text-red-500">*</span></label>
-                    <input type="number" name="reorder_point" id="reorder_point" value="{{ old('reorder_point', $product->reorder_point) }}" required min="0"
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('reorder_point') border-red-500 @enderror"
-                           placeholder="0">
-                    @error('reorder_point')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-2">
-                <a href="{{ route('admin.products.index') }}" class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+            <div class="card-footer flex items-center justify-end gap-3">
+                <a href="{{ route('admin.products.index') }}" class="btn btn-outline">
                     Batal
                 </a>
-                <button type="submit" class="px-6 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors">
-                    Perbarui Produk
+                <button type="submit" class="btn btn-primary" :disabled="loading">
+                    <svg x-show="loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span x-text="loading ? 'Memperbarui...' : 'Perbarui Produk'">Perbarui Produk</span>
                 </button>
             </div>
         </form>

@@ -1,66 +1,96 @@
 @extends('layouts.app')
 
-@section('title', 'Buat Obat Baru')
-@section('header-title', 'Buat Obat Baru')
+@section('header', 'Buat Obat Baru')
 
 @section('content')
-<div class="max-w-2xl">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <form method="POST" action="{{ route('admin.drugs.store') }}" class="space-y-5">
+<div class="max-w-4xl" x-data="{ loading: false }">
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-lg font-semibold text-gray-900">Formulir Obat</h2>
+            <p class="mt-1 text-sm text-gray-500">Isi data obat baru yang akan ditambahkan ke sistem.</p>
+        </div>
+
+        <form method="POST" action="{{ route('admin.drugs.store') }}" @submit="loading = true">
             @csrf
 
-            <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Obat <span class="text-red-500">*</span></label>
-                <input type="text" name="name" id="name" value="{{ old('name') }}" required
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('name') border-red-500 @enderror"
-                       placeholder="Contoh: Amoxicillin 500mg">
-                @error('name')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                <textarea name="description" id="description" rows="3"
-                          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('description') border-red-500 @enderror"
-                          placeholder="Deskripsi obat...">{{ old('description') }}</textarea>
-                @error('description')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label for="unit" class="block text-sm font-medium text-gray-700 mb-1">Satuan <span class="text-red-500">*</span></label>
-                    <select name="unit" id="unit" required
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('unit') border-red-500 @enderror">
-                        <option value="">Pilih Satuan</option>
-                        @foreach(['tablet', 'kapsula', 'botol', 'vial', 'ampul', 'gram', 'ml', 'tube'] as $unit)
-                            <option value="{{ $unit }}" {{ old('unit') === $unit ? 'selected' : '' }}>{{ ucfirst($unit) }}</option>
-                        @endforeach
-                    </select>
-                    @error('unit')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+            <div class="card-body space-y-8">
 
                 <div>
-                    <label for="price_per_unit" class="block text-sm font-medium text-gray-700 mb-1">Harga per Satuan (Rp) <span class="text-red-500">*</span></label>
-                    <input type="number" name="price_per_unit" id="price_per_unit" value="{{ old('price_per_unit') }}" required min="0" step="500"
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('price_per_unit') border-red-500 @enderror"
-                           placeholder="0">
-                    @error('price_per_unit')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Informasi Dasar</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="name" class="form-label">Nama Obat <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" id="name" value="{{ old('name') }}" required
+                                   class="form-input @error('name') error @enderror"
+                                   placeholder="Contoh: Amoxicillin 500mg">
+                            @error('name')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unit" class="form-label">Satuan <span class="text-red-500">*</span></label>
+                            <select name="unit" id="unit" required
+                                    class="form-select @error('unit') error @enderror">
+                                <option value="">Pilih Satuan</option>
+                                @foreach(['tablet', 'kapsula', 'botol', 'vial', 'ampul', 'gram', 'ml', 'tube'] as $unit)
+                                    <option value="{{ $unit }}" {{ old('unit') === $unit ? 'selected' : '' }}>{{ ucfirst($unit) }}</option>
+                                @endforeach
+                            </select>
+                            @error('unit')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
+
+                <hr class="border-gray-200">
+
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Deskripsi</h3>
+                    <div class="form-group">
+                        <label for="description" class="form-label">Deskripsi Obat</label>
+                        <textarea name="description" id="description" rows="3"
+                                  class="form-textarea @error('description') error @enderror"
+                                  placeholder="Deskripsi obat...">{{ old('description') }}</textarea>
+                        @error('description')
+                            <p class="form-error">{{ $message }}</p>
+                        @enderror
+                        <p class="form-hint">Deskripsi opsional untuk menjelaskan detail obat.</p>
+                    </div>
+                </div>
+
+                <hr class="border-gray-200">
+
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Harga</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="price_per_unit" class="form-label">Harga per Satuan (Rp) <span class="text-red-500">*</span></label>
+                            <input type="number" name="price_per_unit" id="price_per_unit" value="{{ old('price_per_unit') }}" required min="0" step="500"
+                                   class="form-input @error('price_per_unit') error @enderror"
+                                   placeholder="0">
+                            @error('price_per_unit')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="form-hint">Harga per satuan obat dalam Rupiah.</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="flex items-center justify-end gap-3 pt-2">
-                <a href="{{ route('admin.drugs.index') }}" class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+            <div class="card-footer flex items-center justify-end gap-3">
+                <a href="{{ route('admin.drugs.index') }}" class="btn btn-outline">
                     Batal
                 </a>
-                <button type="submit" class="px-6 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors">
-                    Simpan Obat
+                <button type="submit" class="btn btn-primary" :disabled="loading">
+                    <svg x-show="loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span x-text="loading ? 'Menyimpan...' : 'Simpan Obat'">Simpan Obat</span>
                 </button>
             </div>
         </form>

@@ -1,64 +1,96 @@
 @extends('layouts.app')
 
-@section('title', 'Buat Layanan Baru')
-@section('header-title', 'Buat Layanan Baru')
+@section('header', 'Buat Layanan Baru')
 
 @section('content')
-<div class="max-w-2xl">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <form method="POST" action="{{ route('admin.services.store') }}" class="space-y-5">
+<div class="max-w-4xl" x-data="{ loading: false }">
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-lg font-semibold text-gray-900">Formulir Layanan</h2>
+            <p class="mt-1 text-sm text-gray-500">Isi data layanan baru yang akan ditambahkan ke sistem.</p>
+        </div>
+
+        <form method="POST" action="{{ route('admin.services.store') }}" @submit="loading = true">
             @csrf
 
-            <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Layanan <span class="text-red-500">*</span></label>
-                <input type="text" name="name" id="name" value="{{ old('name') }}" required
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('name') border-red-500 @enderror"
-                       placeholder="Contoh: Konsultasi Umum">
-                @error('name')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
+            <div class="card-body space-y-8">
+
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Informasi Dasar</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="name" class="form-label">Nama Layanan <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" id="name" value="{{ old('name') }}" required
+                                   class="form-input @error('name') error @enderror"
+                                   placeholder="Contoh: Konsultasi Umum">
+                            @error('name')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="category" class="form-label">Kategori <span class="text-red-500">*</span></label>
+                            <select name="category" id="category" required
+                                    class="form-select @error('category') error @enderror">
+                                <option value="">Pilih Kategori</option>
+                                @foreach(['Konsultasi', 'Vaksin', 'Grooming', 'Operasi', 'Lab', 'Perawatan'] as $cat)
+                                    <option value="{{ $cat }}" {{ old('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                                @endforeach
+                            </select>
+                            @error('category')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-gray-200">
+
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Deskripsi</h3>
+                    <div class="form-group">
+                        <label for="description" class="form-label">Deskripsi Layanan</label>
+                        <textarea name="description" id="description" rows="3"
+                                  class="form-textarea @error('description') error @enderror"
+                                  placeholder="Deskripsi singkat layanan...">{{ old('description') }}</textarea>
+                        @error('description')
+                            <p class="form-error">{{ $message }}</p>
+                        @enderror
+                        <p class="form-hint">Deskripsi opsional untuk menjelaskan detail layanan.</p>
+                    </div>
+                </div>
+
+                <hr class="border-gray-200">
+
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Harga</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="price" class="form-label">Harga (Rp) <span class="text-red-500">*</span></label>
+                            <input type="number" name="price" id="price" value="{{ old('price') }}" required min="0" step="500"
+                                   class="form-input @error('price') error @enderror"
+                                   placeholder="0">
+                            @error('price')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <p class="form-hint">Masukkan harga dalam Rupiah, kelipatan Rp 500.</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                <textarea name="description" id="description" rows="3"
-                          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('description') border-red-500 @enderror"
-                          placeholder="Deskripsi singkat layanan...">{{ old('description') }}</textarea>
-                @error('description')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Kategori <span class="text-red-500">*</span></label>
-                <select name="category" id="category" required
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('category') border-red-500 @enderror">
-                    <option value="">Pilih Kategori</option>
-                    @foreach(['Konsultasi', 'Vaksin', 'Grooming', 'Operasi', 'Lab', 'Perawatan'] as $cat)
-                        <option value="{{ $cat }}" {{ old('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                    @endforeach
-                </select>
-                @error('category')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Harga (Rp) <span class="text-red-500">*</span></label>
-                <input type="number" name="price" id="price" value="{{ old('price') }}" required min="0" step="500"
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm @error('price') border-red-500 @enderror"
-                       placeholder="0">
-                @error('price')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-2">
-                <a href="{{ route('admin.services.index') }}" class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+            <div class="card-footer flex items-center justify-end gap-3">
+                <a href="{{ route('admin.services.index') }}" class="btn btn-outline">
                     Batal
                 </a>
-                <button type="submit" class="px-6 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors">
-                    Simpan Layanan
+                <button type="submit" class="btn btn-primary" :disabled="loading">
+                    <svg x-show="loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span x-text="loading ? 'Menyimpan...' : 'Simpan Layanan'">Simpan Layanan</span>
                 </button>
             </div>
         </form>
